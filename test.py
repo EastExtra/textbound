@@ -207,7 +207,20 @@ def get_enemy_action(enemy, team):
             return ("attack", target)
 
 class Boss(Character):
-    pass  # We'll use the same Character class for the boss, but with higher stats
+    def __init__(self, name, hp, pp, attack, defense):
+        super().__init__(name, hp, pp, attack, defense)
+        self.special_cooldown = 0
+
+    def psi_rock(self, target):
+        if self.pp >= 20 and self.special_cooldown == 0:
+            self.pp -= 20
+            damage = random.randint(30,50)
+            print(f"The Ground shakes in terror as {self.name} uses PSI Rock on {target.name}!")
+            target.take_damage(damage)
+            self.special_cooldown = 3
+
+            return True 
+        return False
 
 # Main game
 pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
@@ -218,5 +231,5 @@ golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
 team = [pythonie, javacript, rustacean, golanger]
 
 monster = Character("Monster", hp=50, pp=20, attack=10, defense=3)
-boss = Boss("MegaByte", hp=300, pp=100, attack=25, defense=15)
+boss = Boss("MegaByte", hp=400, pp=150, attack=30, defense=20)
 
