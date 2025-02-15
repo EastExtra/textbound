@@ -221,6 +221,28 @@ class Boss(Character):
 
             return True 
         return False
+    
+    def decrease_cooldown(self):
+        if self.special_cooldown > 0:
+            self.special_cooldown -= 1
+
+    def boss_acftion(self, team):
+        self.decrease_cooldown()
+        alive_team = [char for char in team if char.is_alive()]
+        target = random.choice(alive_team)
+
+        if random.random() < 0.3 and self.psi_rock(target):
+        return 
+         elif random.random() < 0.2:
+        self.stun_attack(target)
+        elif random.random() < 0.1:
+        self.ultra_smash(target)
+        else:
+            damage = random.randint(self.attack -  2, self.attack + 2)
+            print(f"{self.name} attacks {target.name}!")
+            target.take_damage(damage)
+
+
 
 # Main game
 pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
