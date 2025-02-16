@@ -107,8 +107,13 @@ def execute_action(actor, action):
     if check_stun(actor):
         print(f"{actor.name} is stunned and cannot act!")
         return
+    if action_type == "boss_action":
+        if isinstance(actor, Boss):
+            actor.boss_action(target)
+        else:
+            print(f"{actor.name} is not a boss and can't use boss actions!")
 
-    if action_type == "attack":
+    elif action_type == "attack":
         damage = random.randint(actor.attack - 2, actor.attack + 2)
         print(f"{actor.name} attacks {target.name}!")
         target.take_damage(damage)
@@ -190,11 +195,14 @@ def ultra_smash(attacker, defender):
 def get_enemy_action(enemy, team):
     alive_team = [char for char in team if char.is_alive()]
     if not alive_team:
-        return None, None #return Nonetype
+        return None, None
     target = random.choice(alive_team)
 
     if isinstance(enemy, Boss):
-        if random.random() < 0.2:
+        enemy.decrease_cooldown()
+        if random.random() < 0.3 and enemy.special_cooldown == 0:
+            return ("psi_rock", target)
+        elif random.random() < 0.2:
             return ("stun", target)
         elif random.random() < 0.1:
             return ("ultra_smash", target)
@@ -226,17 +234,17 @@ class Boss(Character):
         if self.special_cooldown > 0:
             self.special_cooldown -= 1
 
-    def boss_acftion(self, team):
+    def boss_action(self, team):
         self.decrease_cooldown()
         alive_team = [char for char in team if char.is_alive()]
         target = random.choice(alive_team)
 
         if random.random() < 0.3 and self.psi_rock(target):
-        return 
-         elif random.random() < 0.2:
-        self.stun_attack(target)
+            return 
+        elif random.random() < 0.2:
+            self.stun_attack(target)
         elif random.random() < 0.1:
-        self.ultra_smash(target)
+            self.ultra_smash(target)
         else:
             damage = random.randint(self.attack -  2, self.attack + 2)
             print(f"{self.name} attacks {target.name}!")
