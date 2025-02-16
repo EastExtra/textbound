@@ -1,6 +1,22 @@
 import random
 import time
+import ctypes
 from stun_feature import check_stun, stun_attack
+
+# Load the shared library
+lib = ctypes.CDLL('./difficulty_adjuster.dylib')
+
+class GameStats(ctypes.Structure):
+    _fields_ = [("player_health", ctypes.c_int),
+                ("enemies_defeated", ctypes.c_int),
+                ("turns_taken", ctypes.c_int)]
+
+# Set up function signatures
+lib.calculate_difficulty.argtypes = [GameStats]
+lib.calculate_difficulty.restype = ctypes.c_float
+
+lib.adjust_enemy_stats.argtypes = [ctypes.c_float, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+lib.adjust_enemy_stats.restype = None
 
 class Character:
     def __init__(self, name, hp, pp, attack, defense):
@@ -86,10 +102,15 @@ def get_player_action(player, enemy, team):
 
 def get_enemy_action(enemy, team):
     alive_team = [char for char in team if char.is_alive()]
+    if not alive_team:
+        return None, None
     target = random.choice(alive_team)
 
     if isinstance(enemy, Boss):
-        if random.random() < 0.2:
+        enemy.decrease_cooldown()
+        if random.random() < 0.3 and enemy.special_cooldown == 0:
+            return ("psi_rock", target)
+        elif random.random() < 0.2:
             return ("stun", target)
         elif random.random() < 0.1:
             return ("ultra_smash", target)
@@ -112,7 +133,6 @@ def execute_action(actor, action):
             actor.boss_action(target)
         else:
             print(f"{actor.name} is not a boss and can't use boss actions!")
-
     elif action_type == "attack":
         damage = random.randint(actor.attack - 2, actor.attack + 2)
         print(f"{actor.name} attacks {target.name}!")
@@ -227,7 +247,7 @@ class Boss(Character):
             target.take_damage(damage)
             self.special_cooldown = 3
 
-            return True 
+            return True
         return False
     
     def decrease_cooldown(self):
@@ -249,10 +269,27 @@ class Boss(Character):
             damage = random.randint(self.attack -  2, self.attack + 2)
             print(f"{self.name} attacks {target.name}!")
             target.take_damage(damage)
+def create_enemy(player_stats):
+    stats = GameStats(player_stats.hp, player_stats.enemies_defeated, player_stats.turns_taken)
+    difficulty = lib.calculate_difficulty(stats)
+
+    base_hp = 50
+    base_attack = 10
+    hp = ctypes.c_int(base_hp)
+    attack = ctypes.c_int(base_attack)
+
+    lib.adjust_enemy_stats(difficulty, ctypes.byref(hp), ctypes.byref(attack))
+    return Character("Monster", hp.value, 20, attack.value, 3)
 
 
-
+# Create a basic player_stats object for demonstration
+class PlayerStats:
+    def __init__(self, hp, enemies_defeated, turns_taken):
+        self.hp = hp
+        self.enemies_defeated = enemies_defeated
+        self.turns_taken = turns_taken
 # Main game
+player_stats = PlayerStats(hp=100, enemies_defeated=0, turns_taken=0)
 pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
 javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
 rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
@@ -260,6 +297,5 @@ golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
 
 team = [pythonie, javacript, rustacean, golanger]
 
-monster = Character("Monster", hp=50, pp=20, attack=10, defense=3)
+monster = create_enemy(player_stats)
 boss = Boss("MegaByte", hp=400, pp=150, attack=30, defense=20)
-
