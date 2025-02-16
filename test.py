@@ -269,6 +269,7 @@ class Boss(Character):
             print(f"{self.name} attacks {target.name}!")
             target.take_damage(damage)
 
+
 def create_enemy(player_stats):
     stats = GameStats(player_stats.hp, player_stats.enemies_defeated, player_stats.turns_taken)
     difficulty = lib.calculate_difficulty(stats)
@@ -281,6 +282,21 @@ def create_enemy(player_stats):
     lib.adjust_enemy_stats(difficulty, ctypes.byref(hp),
                            ctypes.byref(attack))
     return Character("Monster", hp.value, 20, attack.value, 3)
+
+class Item:
+    def __init__(self, name, item_type, damage, healing, defense, special_ability):
+        self.name = name
+        self.item_type = item_type
+        self.damage = damage
+        self.healing = healing
+        self.defense = defense
+        self.special_ability = special_ability
+        
+    def __str__(self):
+        return (f"{self.name} ({self.item_type})\n"
+                f"  Damage: {self.damage}, Healing: {self.healing}, Defense: {self.defense}\n"
+                f"  Special: {self.special_ability}")
+
 
 # Main game
 pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
