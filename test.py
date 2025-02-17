@@ -297,6 +297,26 @@ class Item:
                 f"  Damage: {self.damage}, Healing: {self.healing}, Defense: {self.defense}\n"
                 f"  Special: {self.special_ability}")
 
+def generate_item_name():
+    prefixes = ["Rusty","Shining","Mystic","Powerful"]
+    suffixes = ["Sword", "Shield". "Amulet". "Potion"]
+    return f"{random.choice(prefixes)} {random.choice(suffixes)}"
+
+def generate_item_type():
+    return random.choice(["Weapon","Armor","Consumable"])
+
+def generate_damage():
+    return max(0, int(random.gauss(20,5))) # Mean 20, std dev 5, no negative 
+
+def generate_healing():
+    return max(0, int(random.gauss(30,10))) # Mean 30, std dev 10, no negative 
+
+def generate_defense():
+    reutrn max(0, int(random.gauss(15,3))) # Mean 15, std dev 3, no negative 
+
+def generate_special_ability():
+    abilities = ["None", "Poison","Fire","Stun","Heal"]
+    return random.choice(abilities)
 
 # Main game
 pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
