@@ -1,9 +1,8 @@
 import random
 import time
-import ctypes
+import ctypes 
 from stun_feature import check_stun, stun_attack
 
-# Load the shared library
 lib = ctypes.CDLL('./difficulty_adjuster.dylib')
 
 class GameStats(ctypes.Structure):
@@ -11,7 +10,6 @@ class GameStats(ctypes.Structure):
                 ("enemies_defeated", ctypes.c_int),
                 ("turns_taken", ctypes.c_int)]
 
-# Set up function signatures
 lib.calculate_difficulty.argtypes = [GameStats]
 lib.calculate_difficulty.restype = ctypes.c_float
 
@@ -269,7 +267,6 @@ class Boss(Character):
             print(f"{self.name} attacks {target.name}!")
             target.take_damage(damage)
 
-
 def create_enemy(player_stats):
     stats = GameStats(player_stats.hp, player_stats.enemies_defeated, player_stats.turns_taken)
     difficulty = lib.calculate_difficulty(stats)
@@ -282,6 +279,7 @@ def create_enemy(player_stats):
     lib.adjust_enemy_stats(difficulty, ctypes.byref(hp),
                            ctypes.byref(attack))
     return Character("Monster", hp.value, 20, attack.value, 3)
+# Item Class and Generation Functions
 
 class Item:
     def __init__(self, name, item_type, damage, healing, defense, special_ability):
@@ -291,32 +289,42 @@ class Item:
         self.healing = healing
         self.defense = defense
         self.special_ability = special_ability
-        
+
     def __str__(self):
         return (f"{self.name} ({self.item_type})\n"
                 f"  Damage: {self.damage}, Healing: {self.healing}, Defense: {self.defense}\n"
                 f"  Special: {self.special_ability}")
 
 def generate_item_name():
-    prefixes = ["Rusty","Shining","Mystic","Powerful"]
-    suffixes = ["Sword", "Shield". "Amulet". "Potion"]
+    prefixes = ["Rusty", "Shining", "Mystic", "Powerful"]
+    suffixes = ["Sword", "Shield", "Amulet", "Potion"]
     return f"{random.choice(prefixes)} {random.choice(suffixes)}"
 
 def generate_item_type():
-    return random.choice(["Weapon","Armor","Consumable"])
+    return random.choice(["Weapon", "Armor", "Consumable"])
 
 def generate_damage():
-    return max(0, int(random.gauss(20,5))) # Mean 20, std dev 5, no negative 
+    return max(0, int(random.gauss(20, 5)))  # mean 20, std dev 5, no negative
 
 def generate_healing():
-    return max(0, int(random.gauss(30,10))) # Mean 30, std dev 10, no negative 
+    return max(0, int(random.gauss(30, 10)))  # mean 30, std dev 10, no negative
 
 def generate_defense():
-    reutrn max(0, int(random.gauss(15,3))) # Mean 15, std dev 3, no negative 
+    return max(0, int(random.gauss(15, 3)))  # mean 15, std dev 3, no negative
 
 def generate_special_ability():
-    abilities = ["None", "Poison","Fire","Stun","Heal"]
+    abilities = ["None", "Poison", "Fire", "Stun", "Heal"]
     return random.choice(abilities)
+
+def generate_item():
+    name = generate_item_name()
+    item_type = generate_item_type()
+    damage = generate_damage()
+    healing = generate_healing()
+    defense = generate_defense()
+    special_ability = generate_special_ability()
+    return Item(name, item_type, damage, healing, defense, special_ability)
+
 
 # Main game
 pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
@@ -324,14 +332,8 @@ javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
 rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
 golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
 
-class PlayerStats:
-    def __init__(self, hp, enemies_defeated, turns_taken):
-        self.hp = hp
-        self.enemies_defeated = enemies_defeated
-        self.turns_taken = turns_taken
-
 team = [pythonie, javacript, rustacean, golanger]
 
-player_stats = PlayerStats(hp=100, enemies_defeated=0, turns_taken=0)
 monster = create_enemy(player_stats)
 boss = Boss("MegaByte", hp=400, pp=150, attack=30, defense=20)
+

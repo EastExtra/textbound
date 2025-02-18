@@ -1,58 +1,72 @@
-import pygame 
-import sys 
-import random 
-from test import battle, Character, Boss 
+import pygame
+import sys
+import random
+from test import battle, Character, Boss, generate_item
+import test
 
 pygame.init()
 
-WIDTH, HEIGHT = 800,600
+WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption(".")
 
-#colors 
-WHITE = (255,255,255)
-BLACK = (0,0,0)
-YELLOW = (255,255,0)
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
 
-#player 
-player_size = 50 
-player_x = WIDTH // 2 
-player_y = HEIGHT // 2 
-player_speed = 5 
+# Player
+player_size = 50
+player_x = WIDTH // 2
+player_y = HEIGHT // 2
+player_speed = 5
 
-#enemy(yellow circle)
+# Enemy (yellow circle)
 enemy_radius = 20
 enemy_x = random.randint(enemy_radius, WIDTH - enemy_radius)
 enemy_y = random.randint(enemy_radius, HEIGHT - enemy_radius)
 
-#game state
-enemy_visible = True 
+# Game state
+enemy_visible = True
 
-#frame rate
+# Frame rate
 clock = pygame.time.Clock()
 FPS = 60
 
-#boss
-boss_battle = False 
+# Boss
+boss_battle = False
 
-#main game loop 
-running = True 
+# Explore area function
+def explore_area():
+    if random.random() < 0.5:
+        item = test.generate_item()
+        print(f"You found an item!\n{item}\n")
+        return item
+    else:
+        print("You found nothing of interest here.")
+        return None
+
+# Main game loop
+running = True
 while running:
     dt = clock.tick(FPS) / 100.0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False 
-    
+            running = False
+        if event.type == pygame.KEYDOWN:  # Check for key presses
+            if event.key == pygame.K_e:  # If 'E' is pressed
+                explore_area()  # Call the explore function
+
     keys = pygame.key.get_pressed()
     dx = dy = 0
     if keys[pygame.K_LEFT]:
         dx -= player_speed * dt
     if keys[pygame.K_RIGHT]:
-        dx += player_speed * dt  
+        dx += player_speed * dt
     if keys[pygame.K_UP]:
-        dy -= player_speed * dt 
+        dy -= player_speed * dt
     if keys[pygame.K_DOWN]:
-        dy += player_speed * dt 
+        dy += player_speed * dt
 
     if dx != 0 and dy != 0:
         dx *= 0.707
@@ -63,13 +77,13 @@ while running:
 
     player_x = max(0, min(player_x, WIDTH - player_size))
     player_y = max(0, min(player_y, HEIGHT - player_size))
-    
+
     if enemy_visible:
         distance = ((player_x + player_size/2 - enemy_x)**2 + (player_y + player_size/2 - enemy_y)**2)**0.5
         if distance < (player_size/2 + enemy_radius):
-            enemy_visible = False 
+            enemy_visible = False
 
-            # Main battle 
+            # Main battle
             pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
             javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
             rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
@@ -81,10 +95,10 @@ while running:
             battle_result = battle(team, monster)
             if battle_result:
                 print("You defeated the monster!")
-                boss_battle = True 
+                boss_battle = True
             else:
                 print("You lost the battle!")
-                running = False 
+                running = False
 
             if boss_battle:
                 print("Prepare for the boss battle!")
@@ -93,7 +107,7 @@ while running:
                     print("Congrats! You defeated the boss!")
                 else:
                     print("You were defeated by the boss...")
-                running = False # end game after boss battle 
+                running = False  # end game after boss battle
 
             if running:
                 pygame.init()
