@@ -28,13 +28,12 @@ enemy_y = random.randint(enemy_radius, HEIGHT - enemy_radius)
 
 # Game state
 enemy_visible = True
+boss_battle = False
+game_over = False
 
 # Frame rate
 clock = pygame.time.Clock()
 FPS = 60
-
-# Boss
-boss_battle = False
 
 # Explore area function
 def explore_area():
@@ -47,12 +46,11 @@ def explore_area():
         return None
 
 # Main game loop
-running = True
-while running:
+while not game_over:
     dt = clock.tick(FPS) / 100.0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            game_over = True  # Exit game loop
         if event.type == pygame.KEYDOWN:  # Check for key presses
             if event.key == pygame.K_e:  # If 'E' is pressed
                 explore_area()  # Call the explore function
@@ -88,9 +86,19 @@ while running:
             javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
             rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
             golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
+
             team = [pythonie, javacript, rustacean, golanger]
-            monster = Character("Monster", hp=50, pp=20, attack=10, defense=3)
-            boss = Boss("MegaByte", hp=300, pp=100, attack=25, defense=15)
+
+            #player_stats is defined locally within the battle encounter logic.
+            class PlayerStats:
+                def __init__(self, hp, enemies_defeated, turns_taken):
+                    self.hp = hp
+                    self.enemies_defeated = enemies_defeated
+                    self.turns_taken = turns_taken
+            player_stats = PlayerStats(hp=100, enemies_defeated=0, turns_taken=0)
+
+            monster = test.create_enemy(player_stats)
+            boss = Boss("MegaByte", hp=400, pp=150, attack=30, defense=20)
 
             battle_result = battle(team, monster)
             if battle_result:
@@ -98,18 +106,22 @@ while running:
                 boss_battle = True
             else:
                 print("You lost the battle!")
-                running = False
+                game_over = True
 
             if boss_battle:
                 print("Prepare for the boss battle!")
                 battle_result = battle(team, boss)
                 if battle_result:
                     print("Congrats! You defeated the boss!")
+                    game_over = True
                 else:
                     print("You were defeated by the boss...")
-                running = False  # end game after boss battle
+                    game_over = True
 
-            if running:
+            if not game_over:
+                enemy_visible = True
+                enemy_x = random.randint(enemy_radius, WIDTH - enemy_radius)
+                enemy_y = random.randint(enemy_radius, HEIGHT - enemy_radius)
                 pygame.init()
                 screen = pygame.display.set_mode((WIDTH, HEIGHT))
                 pygame.display.set_caption("Overworld")
@@ -126,6 +138,6 @@ while running:
 
     pygame.display.flip()
 
-pygame.quit()
-sys.exit()
-
+if game_over:
+    pygame.quit()
+    sys.exit()

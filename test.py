@@ -3,6 +3,7 @@ import time
 import ctypes
 from stun_feature import check_stun, stun_attack
 
+# Load the shared library
 lib = ctypes.CDLL('./difficulty_adjuster.dylib')
 
 class GameStats(ctypes.Structure):
@@ -10,6 +11,7 @@ class GameStats(ctypes.Structure):
                 ("enemies_defeated", ctypes.c_int),
                 ("turns_taken", ctypes.c_int)]
 
+# Set up function signatures
 lib.calculate_difficulty.argtypes = [GameStats]
 lib.calculate_difficulty.restype = ctypes.c_float
 
@@ -100,7 +102,7 @@ def get_player_action(player, enemy, team):
 def get_enemy_action(enemy, team):
     alive_team = [char for char in team if char.is_alive()]
     if not alive_team:
-        return None, None # No target if all team members are dead
+        return None, None  # No target if all team members are dead
     target = random.choice(alive_team)
 
     if isinstance(enemy, Boss):
@@ -121,7 +123,7 @@ def get_enemy_action(enemy, team):
 
 def execute_action(actor, action):
     action_type, target = action
-    
+
     if check_stun(actor):
         print(f"{actor.name} is stunned and cannot act!")
         return
@@ -165,11 +167,10 @@ def battle(team, enemy):
 
         actions.clear()
         # Collect actions for characters
-        for char in team: 
+        for char in team:
             if char.is_alive():
                 action = get_player_action(char, enemy, team)
                 actions.append((char, action))
-       
 
         enemy_action = get_enemy_action(enemy, team)
         actions.append((enemy, enemy_action))
@@ -184,17 +185,17 @@ def battle(team, enemy):
                 if action[0] != 'defend':  # Only extract target if not defending
                     execute_action(actor, action)
                 else:
-                     execute_action(actor,action) #pass both defend
+                    execute_action(actor, action)  # pass both defend
             if not enemy.is_alive() or not any(char.is_alive() for char in team):
                 break
         time.sleep(1)
 
         if not enemy.is_alive():
             print(f"\nYou defeated {enemy.name}!")
-            return True 
+            return True
         elif not any(char.is_alive() for char in team):
             print(f"\nYour team has been defeated...")
-            return False 
+            return False
 def switch_character(team):
     print("\nChoose a character to switch to:")
     for i, char in enumerate(team):
@@ -204,7 +205,7 @@ def switch_character(team):
 
 def ultra_smash(attacker, defender):
     print(f"{attacker.name} unleashes an ULTRA SMASH!!!")
-    damage = attacker.attack * 5 # deals 5x normal attack
+    damage = attacker.attack * 5  # deals 5x normal attack
     defender.take_damage(damage, is_smash=True)
     print(f"{defender.name} takes a devastating {damage} damage!")
 
@@ -239,14 +240,14 @@ class Boss(Character):
     def psi_rock(self, target):
         if self.pp >= 20 and self.special_cooldown == 0:
             self.pp -= 20
-            damage = random.randint(30,50)
+            damage = random.randint(30, 50)
             print(f"The Ground shakes in terror as {self.name} uses PSI Rock on {target.name}!")
             target.take_damage(damage)
             self.special_cooldown = 3
 
-            return True 
+            return True
         return False
-    
+
     def decrease_cooldown(self):
         if self.special_cooldown > 0:
             self.special_cooldown -= 1
@@ -257,13 +258,13 @@ class Boss(Character):
         target = random.choice(alive_team)
 
         if random.random() < 0.3 and self.psi_rock(target):
-            return 
+            return
         elif random.random() < 0.2:
             self.stun_attack(target)
         elif random.random() < 0.1:
             self.ultra_smash(target)
         else:
-            damage = random.randint(self.attack -  2, self.attack + 2)
+            damage = random.randint(self.attack - 2, self.attack + 2)
             print(f"{self.name} attacks {target.name}!")
             target.take_damage(damage)
 
@@ -279,8 +280,8 @@ def create_enemy(player_stats):
     lib.adjust_enemy_stats(difficulty, ctypes.byref(hp),
                            ctypes.byref(attack))
     return Character("Monster", hp.value, 20, attack.value, 3)
-# Item Class and Generation Functions
 
+# Item Class and Generation Functions
 class Item:
     def __init__(self, name, item_type, damage, healing, defense, special_ability):
         self.name = name
@@ -325,21 +326,19 @@ def generate_item():
     special_ability = generate_special_ability()
     return Item(name, item_type, damage, healing, defense, special_ability)
 
-
-# Main game
-pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
-javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
-rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
-golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
-
 class PlayerStats:
     def __init__(self, hp, enemies_defeated, turns_taken):
         self.hp = hp
         self.enemies_defeated = enemies_defeated
         self.turns_taken = turns_taken
+# Main game
+player_stats = PlayerStats(hp=100, enemies_defeated=0, turns_taken=0)
+pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
+javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
+rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
+golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
 
 team = [pythonie, javacript, rustacean, golanger]
 
-player_stats = PlayerStats(hp=100, enemies_defeated=0, turns_taken=0)
 monster = create_enemy(player_stats)
 boss = Boss("MegaByte", hp=400, pp=150, attack=30, defense=20)
