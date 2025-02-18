@@ -1,6 +1,6 @@
 import random
 import time
-import ctypes 
+import ctypes
 from stun_feature import check_stun, stun_attack
 
 lib = ctypes.CDLL('./difficulty_adjuster.dylib')
@@ -332,8 +332,14 @@ javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
 rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
 golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
 
+class PlayerStats:
+    def __init__(self, hp, enemies_defeated, turns_taken):
+        self.hp = hp
+        self.enemies_defeated = enemies_defeated
+        self.turns_taken = turns_taken
+
 team = [pythonie, javacript, rustacean, golanger]
 
+player_stats = PlayerStats(hp=100, enemies_defeated=0, turns_taken=0)
 monster = create_enemy(player_stats)
 boss = Boss("MegaByte", hp=400, pp=150, attack=30, defense=20)
-
