@@ -13,6 +13,21 @@ class GameStats(ctypes.Structure):
     __fields__ = [
         ("player_health", ctypes.c_int),
         ("enemies_defeated", ctypes.c_int)
+        ("turns_taken", ctypes.c_int)
         
     ]
+
+class Character:
+    def __init__(self, name, hp, pp, attack, defense):
+        self.name = name 
+        self.hp = hp 
+        self.max_hp = hp 
+        self.pp = pp
+        self.max_pp = pp
+        self.attack = attack 
+        self.defense = defense 
+        self.status = {'stunned': False, 'stun_duration': 0}
+
+    def is_alive(self):
+        return self.hp > 0
 
