@@ -3,6 +3,7 @@ import sys
 import random
 from test import battle, Character, Boss, generate_item
 import test
+from turtledemo.minimal_hanoi import play
 
 pygame.init()
 
@@ -16,7 +17,7 @@ BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
 
 # Player
-player_size = 50
+player_size = 30
 player_x = WIDTH // 2
 player_y = HEIGHT // 2
 player_speed = 5
@@ -58,20 +59,19 @@ while not game_over:
     keys = pygame.key.get_pressed()
     dx = dy = 0
     if keys[pygame.K_LEFT]:
-        dx -= player_speed * dt
+        dx = -1
     if keys[pygame.K_RIGHT]:
-        dx += player_speed * dt
+        dx = 1
     if keys[pygame.K_UP]:
-        dy -= player_speed * dt
+        dy = -1
     if keys[pygame.K_DOWN]:
-        dy += player_speed * dt
+        dy = 1
 
     if dx != 0 and dy != 0:
-        dx *= 0.707
-        dy *= 0.707
-
-    player_x += dx
-    player_y += dy
+        dx *= 1.414
+        dy *= 1.414
+    player_x += dx * player_speed * dt
+    player_y += dy * player_speed * dt
 
     player_x = max(0, min(player_x, WIDTH - player_size))
     player_y = max(0, min(player_y, HEIGHT - player_size))
@@ -85,6 +85,7 @@ while not game_over:
             pythonie = Character("Pythonie", hp=100, pp=50, attack=15, defense=5)
             javacript = Character("Javacript", hp=90, pp=60, attack=12, defense=4)
             rustacean = Character("Rustacean", hp=120, pp=30, attack=18, defense=8)
+
             golanger = Character("Golanger", hp=110, pp=40, attack=14, defense=6)
 
             team = [pythonie, javacript, rustacean, golanger]
@@ -132,7 +133,7 @@ while not game_over:
     if enemy_visible:
         pygame.draw.circle(screen, YELLOW, (int(enemy_x), int(enemy_y)), enemy_radius)
     elif boss_battle:
-        font = pygame.font.Font(None, 36)
+        font = pygame.font(None, 36)
         text = font.render("Boss Battle in progress!", True, BLACK)
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
 
