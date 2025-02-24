@@ -62,4 +62,48 @@ class Character:
     def execute_action(actor, action, target=None):
         if check_stun(actor):
             print(f"{actor.name} is stunned and cannot act!")
-            return 
+            return
+
+        action_type = action[0]
+        if action_type == 'attack':
+            damage = random.randint(actor.attack -2, actor.attack + 2)
+            execute_attack(actor,damage,target)
+        elif action_type == 'psi':
+            psi_type = action[1]
+            actor.use_psi(psi_type, target)
+        elif action_type == 'stun':
+            stun_attack(actor, target)
+        elif action_type == 'ultra':
+            ultra_smash(actor, target)
+        elif action_type == 'defend':
+            actor.defense += 5
+            print(f"{actor.name} is defending. Defense increased by 5!")
+        elif action_type == 'switch':
+            switch_character(actor.team)
+
+        def ultra_smash(attacker, defender):
+            damage = attacker.attack * 5
+            defender.take_damage(damage, True)
+            print(f"{attacker.name} unleashes an ULTRA SMASH!!!!{defender.name} takes {damage} damage!")
+
+        def create_enemy(player_stats):
+            stats = GameStats(player_stats.hp, player_stats.enemies_defeated, player_stats.turns_taken)
+            difficulty = lib.calculate_difficulty(stats)
+
+            hp = ctypes.c_int(50)
+            attack = ctypes.c_int(0)
+            lib.adjust_enemy_stats(difficulty, ctypes.byref(hp), ctypes.byref(attack))
+
+            return Character("Monster", hp.value, 20, attack.value, 3)
+
+        class Boss(Character):
+            def __init__(self,name,hp,pp,attack,defense):
+                super().__init__(name,hp,pp,attack,defense)
+                self.special_cooldown = 0
+
+            def psi_rock(self, target):
+                if self.pp >= 20 and self.special_cooldown == 0:
+                    self.pp -= 20
+                    damage = random.randint(30,50)
+                    target.take_damage(damage)
+                    self.special_cooldown = 3
